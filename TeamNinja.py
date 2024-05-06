@@ -24,8 +24,8 @@ MEETS = {"1 https://meet.google.com/meetURL1": "23:59:59 31/12/2020",
          }
 
 DURATION = 60 # Duration of each Meet in minutes
-USERNAME = "emailaddress@gmail.com"
-PASSWORD = "passw0rd"
+USERNAME = "01-131222-008@student.bahria.edu.pk"
+PASSWORD = "tasNas32$"
 BROWSER_DRIVER = "ChromeDrivers/win32/chromedriver.exe"
 
 #                   Google Chrome
@@ -43,16 +43,14 @@ BROWSER_DRIVER = "ChromeDrivers/win32/chromedriver.exe"
 ##################################################################
 
 # All required interactive elements' locators (text fields, buttons, etc.)
-usernameFieldPath = "identifierId"
-usernameNextButtonPath = "identifierNext"
-passwordFieldPath = "password"
-passwordNextButtonPath = "passwordNext"
+usernameFieldPath = "i0116"
+nextButtonPath="idSIButton9"
+passwordFieldPath = "i0118"
+switchToNewTeamsButtonPath=".app-switcher-install-by-policy-dialog--btn.ts-btn.ts-btn-fluent.ts-btn-fluent-primary"
 joinButton1Path = "//span[contains(text(), 'Join')]"
 joinButton2Path = "//span[contains(text(), 'Ask to join')]"
 endButtonPath = "[aria-label='Leave call']"
 
-currentVersionNumber = "v3.1.1"
-VERSION_CHECK_URL = "https://raw.githubusercontent.com/SHUR1K-N/MeetNinja-Google-Meet-Bot/master/versionfile.txt"
 BANNER1 = colored('''
    ███▄ ▄███▓▓█████ ▓█████▄▄▄█████▓ ███▄    █  ██▓ ███▄    █  ▄▄▄██▀▀▀▄▄▄
   ▓██▒▀█▀ ██▒▓█   ▀ ▓█   ▀▓  ██▒ ▓▒ ██ ▀█   █ ▓██▒ ██ ▀█   █    ▒██  ▒████▄
@@ -70,28 +68,6 @@ BANNER4 = colored('''                    ------------------------------------'''
 
 def printBanner():
     print(BANNER1), print(BANNER2), print(BANNER3), print(BANNER4)
-
-
-def versionCheck():
-    global currentVersionNumber
-
-    print("\nChecking for MeetNinja updates...", end="")
-
-    crawlVersionFile = requests.get(VERSION_CHECK_URL)
-    crawlVersionFile = str(crawlVersionFile.content)
-    crawlVersionFile = re.findall(r"([0-9]+)", crawlVersionFile)
-    latestVersionNumber = int(''.join(crawlVersionFile))
-
-    currentVersionNumber = re.findall(r"([0-9]+)", currentVersionNumber)
-    currentVersionNumber = int(''.join(currentVersionNumber))
-
-    if currentVersionNumber >= latestVersionNumber:
-        print(colored(" You are using the latest version!\n", "green"))
-    elif currentVersionNumber < latestVersionNumber:
-        print(colored(" You are using an older version of MeetNinja.", "red"))
-        print(colored("\nGet the latest version at https://github.com/SHUR1K-N/MeetNinja-Google-Meet-Bot", "yellow"))
-        print(colored("Every new version comes with fixes, improvements, new features, etc..", "yellow"))
-        print(colored("Please do not open an Issue if you see this message and have not yet tried the latest version.", "yellow"))
 
 
 def fixTimeFormat(rawTime):
@@ -149,22 +125,26 @@ def initBrowser():
 
 def login():
     print("Logging into Google account...", end="")
-    driver.get('https://accounts.google.com/signin')
+    driver.get('https://teams.microsoft.com/v2/')
 
     usernameField = wait.until(when.element_to_be_clickable((by.ID, usernameFieldPath)))
     time.sleep(1)
     usernameField.send_keys(USERNAME)
-
-    usernameNextButton = wait.until(when.element_to_be_clickable((by.ID, usernameNextButtonPath)))
+    usernameNextButton = wait.until(when.element_to_be_clickable((by.ID, nextButtonPath)))
     usernameNextButton.click()
 
-    passwordField = wait.until(when.element_to_be_clickable((by.NAME, passwordFieldPath)))
+    passwordField = wait.until(when.element_to_be_clickable((by.ID, passwordFieldPath)))
     time.sleep(1)
     passwordField.send_keys(PASSWORD)
-
-    passwordNextButton = wait.until(when.element_to_be_clickable((by.ID, passwordNextButtonPath)))
+    passwordNextButton = wait.until(when.element_to_be_clickable((by.ID, nextButtonPath)))
     passwordNextButton.click()
-    time.sleep(3)
+
+    StaySignInButton = wait.until(when.element_to_be_clickable((by.ID, nextButtonPath)))
+    StaySignInButton.click()
+    
+    time.sleep(30)    #Just Teams Things
+    switchToNewTeamsButton = wait.until(when.element_to_be_clickable((by.CSS_SELECTOR,switchToNewTeamsButtonPath)))
+    switchToNewTeamsButton.click()
     print(colored(" Success!", "green"))
 
 
@@ -244,9 +224,6 @@ def hibernate():
 if __name__ == "__main__":
 
     printBanner()
-
-    versionCheck()
-
     try:
         DURATION *= 60
         driver = initBrowser()
@@ -262,9 +239,9 @@ if __name__ == "__main__":
             print(colored(" Started!", "green"))
             if (meetIndex <= 1):
                 login()
-            attendMeet()
+            #attendMeet()
             time.sleep(DURATION)
-            endMeet()
+            #endMeet()
         print("\n\nAll Meets completed successfully.")
         # hibernate()
         # Uncomment above to hibernate after a 10 second countdown upon completion of all Meets (Ctrl + C to abort hibernation)
