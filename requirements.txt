@@ -1,7 +1,7 @@
 selenium 	# for web browser-based automation
-requests 	# for automatic update checks
-datetime 	# for scheduling & timestamps
-pause		# for scheduling
-colorama 	# for colors
-termcolor 	# for colors
-webdriver-manager  # Driver Downloader
+requests 	        # for automatic update checks
+datetime 	        # for scheduling & timestamps
+pause		        # for scheduling
+colorama 	        # for colors
+termcolor 	        # for colors
+webdriver-manager   # for webDriver Management
