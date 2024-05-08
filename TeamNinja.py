@@ -1,7 +1,7 @@
 import requests
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as when
 from selenium.webdriver.common.by import By
@@ -11,7 +11,7 @@ from selenium.webdriver.common.keys import Keys
 import pause; import os; import re
 import time; from datetime import datetime
 import colorama; from termcolor import colored
-from selenium.webdriver.chrome.service import Service as ChromeService
+
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
@@ -28,8 +28,8 @@ MEETS = {"1 https://meet.google.com/meetURL1": "23:59:59 10/06/2023",
          }
 
 DURATION = 60 # Duration of each Meetng in minutes
-USERNAME = "01-131222-008@student.bahria.edu.pk"
-PASSWORD = "tasNas32$"
+USERNAME = ""
+PASSWORD = ""
 BROWSER_DRIVER = "ChromeDrivers/win32/chromedriver.exe"
 
 #                   Google Chrome
@@ -113,14 +113,16 @@ def initBrowser():
         case "3":
             firefoxOptions = webdriver.FirefoxOptions()
             firefoxOptions.add_argument("--width=800"), firefoxOptions.add_argument("--height=800")
-            # firefoxOptions.headless = True
+            firefoxOptions.set_preference("network.cookie.cookieBehavior" , 0)
+            #firefoxOptions.set_preference("network.cookie.alwaysAccept" , True)
+            firefoxOptions.headless = True
             firefoxOptions.set_preference("layers.acceleration.disabled", True)
             firefoxOptions.set_preference("browser.privatebrowsing.autostart", True)
             firefoxOptions.set_preference("permissions.default.microphone", 2)
             firefoxOptions.set_preference("permissions.default.camera", 2)
-            firefoxOptions.set_preference("unhandled_prompt_behavior", 'accept')
             if BROWSER_DRIVER.lower().endswith(".exe"):
-                driver = webdriver.Firefox(executable_path=GeckoDriverManager().install(), options=firefoxOptions)
+                firefox_service = FirefoxService(GeckoDriverManager().install())
+                driver = webdriver.Firefox(service=firefox_service, options=firefoxOptions)
             # else:
             #     servicePath = Service(BROWSER_DRIVER)
             #     driver = webdriver.Firefox(service=servicePath, options=firefoxOptions)
@@ -134,6 +136,7 @@ def login():
     print("Logging into Microsoft account...", end="")
     driver.get('https://teams.microsoft.com/v2/')
 
+    time.sleep(5)
     usernameField = wait.until(when.element_to_be_clickable((By.ID, usernameFieldPath)))
     time.sleep(1)
     usernameField.send_keys(USERNAME)
@@ -141,14 +144,17 @@ def login():
     usernameNextButton.click()
 
     passwordField = wait.until(when.element_to_be_clickable((By.ID, passwordFieldPath)))
-    time.sleep(1)
+    time.sleep(3)
     passwordField.send_keys(PASSWORD)
     passwordNextButton = wait.until(when.element_to_be_clickable((By.ID, nextButtonPath)))
     passwordNextButton.click()
 
     StaySignInButton = wait.until(when.element_to_be_clickable((By.ID, nextButtonPath)))
+    time.sleep(1)
     StaySignInButton.click()
-    print("Waiting to Switch to New Teams v2")
+    time.sleep(15)
+    driver.get('https://teams.microsoft.com')
+    print("\nWaiting to Switch to New Teams v2")
     time.sleep(30)    #Just Teams Things
     switchToNewTeamsButton = wait.until(when.element_to_be_clickable((By.CSS_SELECTOR,switchToNewTeamsButtonPath)))
     switchToNewTeamsButton.click()
