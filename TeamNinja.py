@@ -2,6 +2,7 @@ import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.firefox.service import Service as FirefoxService
+
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as when
 from selenium.webdriver.common.by import By
@@ -13,14 +14,14 @@ import time; from datetime import datetime
 import colorama; from termcolor import colored
 
 from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
 colorama.init()
 
 ###################################################################
 #                        Teams Meet             HH:MM:SS DD/MM/YYYY
-MEETS = {"1 https://meet.google.com/meetURL1": "23:59:59 10/06/2023",
+MEETS = {
+    "1https://teams.microsoft.com/l/meetup-join/19:1mBIxfF6WIZ_supXSas7J9NBhl_UF4qETXbO3s-FDpU1@thread.tacv2/1717520576099?context=%7b%22Tid%22%3a%2275df096c-8b72-48e4-9b91-cbf79d87ee3a%22%2c%22Oid%22%3a%221504c83d-fde9-407a-8724-871d52b494a7%22%7d": "23:59:59 10/06/2023",
          "2 https://meet.google.com/meetURL2": "23:59:59 10/06/2024",
          "3 https://meet.google.com/meetURL3": "23:59:59 10/06/2024",
          "4 https://meet.google.com/meetURL4": "23:59:59 10/06/2024",
@@ -28,9 +29,8 @@ MEETS = {"1 https://meet.google.com/meetURL1": "23:59:59 10/06/2023",
          }
 
 DURATION = 60 # Duration of each Meetng in minutes
-USERNAME = ""
-PASSWORD = ""
-BROWSER_DRIVER = "ChromeDrivers/win32/chromedriver.exe"
+USERNAME = "01-131222-008@student.bahria.edu.pk"
+PASSWORD = "tasNas32$"
 
 #                   Google Chrome
 #           Linux: "ChromeDrivers/linux64/chromedriver"
@@ -51,9 +51,13 @@ usernameFieldPath = "i0116"
 nextButtonPath="idSIButton9"
 passwordFieldPath = "i0118"
 switchToNewTeamsButtonPath=".app-switcher-install-by-policy-dialog--btn.ts-btn.ts-btn-fluent.ts-btn-fluent-primary"
-joinButton1Path = "//span[contains(text(), 'Join')]"
+joinButton1Path = "[aria-label='Join now']"
 joinButton2Path = "//span[contains(text(), 'Ask to join')]"
-endButtonPath = "[aria-label='Leave call']"
+endButtonPath = "[aria-label='Leave (Ctrl+Shift+H)']"
+ToggleMuteButtonPath = "[data-tid='toggle-mute']"
+ContinueinBrowserButtonPath = "[aria-label='Join meeting from this browser']"
+JoinWithoutAudioVideoButtonPath = ".fui-Button.r1alrhcs"
+
 
 BANNER1 = colored('''
    ███▄ ▄███▓▓█████ ▓█████▄▄▄█████▓ ███▄    █  ██▓ ███▄    █  ▄▄▄██▀▀▀▄▄▄
@@ -89,7 +93,7 @@ def timeStamp():
 
 
 def initBrowser():
-    BrowserChoice=input("Enter Browser of Your Choice:\n1. Google Chrome\n2. Microsoft Edge\n3. Mozilla Firefox\n")
+    BrowserChoice=input("Enter Browser of Your Choice:\n1. Google Chrome\n2. Mozilla Firefox\n\n")
     print("\nInitializing browser...", end="")
     match BrowserChoice:
         case "1":
@@ -102,15 +106,16 @@ def initBrowser():
             chromeOptions.add_experimental_option('excludeSwitches', ['enable-logging'])
             chromeOptions.add_experimental_option("prefs", {"profile.default_content_setting_values.media_stream_mic": 2,
                                                             "profile.default_content_setting_values.media_stream_camera": 2,
-                                                            "profile.default_content_setting_values.notifications": 2
+                                                            "profile.default_content_setting_values.notifications": 2,
+                                                            "hardware.audio_capture_allowed_urls": ["https://teams.microsoft.com"],
+                                                            "hardware.video_capture_allowed_urls": ["https://teams.microsoft.com"]
                                                             })
-            if BROWSER_DRIVER.lower().endswith(".exe"):
-                chrome_service = ChromeService(ChromeDriverManager().install())
-                driver = webdriver.Chrome(service=chrome_service, options=chromeOptions)
+            chrome_service = ChromeService(ChromeDriverManager().install())
+            driver = webdriver.Chrome(service=chrome_service, options=chromeOptions)
             # else:
             #     servicePath = Service(BROWSER_DRIVER)
             #     driver = webdriver.Chrome(service=servicePath, options=chromeOptions)
-        case "3":
+        case "2":
             firefoxOptions = webdriver.FirefoxOptions()
             firefoxOptions.add_argument("--width=800"), firefoxOptions.add_argument("--height=800")
             firefoxOptions.set_preference("network.cookie.cookieBehavior" , 0)
@@ -120,9 +125,8 @@ def initBrowser():
             firefoxOptions.set_preference("browser.privatebrowsing.autostart", True)
             firefoxOptions.set_preference("permissions.default.microphone", 2)
             firefoxOptions.set_preference("permissions.default.camera", 2)
-            if BROWSER_DRIVER.lower().endswith(".exe"):
-                firefox_service = FirefoxService(GeckoDriverManager().install())
-                driver = webdriver.Firefox(service=firefox_service, options=firefoxOptions)
+            firefox_service = FirefoxService(GeckoDriverManager().install())
+            sdriver = webdriver.Firefox(service=firefox_service, options=firefoxOptions)
             # else:
             #     servicePath = Service(BROWSER_DRIVER)
             #     driver = webdriver.Firefox(service=servicePath, options=firefoxOptions)
@@ -155,63 +159,61 @@ def login():
     time.sleep(15)
     driver.get('https://teams.microsoft.com')
     print("\nWaiting to Switch to New Teams v2")
-    time.sleep(30)    #Just Teams Things
-    switchToNewTeamsButton = wait.until(when.element_to_be_clickable((By.CSS_SELECTOR,switchToNewTeamsButtonPath)))
-    switchToNewTeamsButton.click()
+    time.sleep(20)    #Just Teams Things
+    try:
+        switchToNewTeamsButton = wait.until(when.element_to_be_clickable((By.CSS_SELECTOR,switchToNewTeamsButtonPath)))
+        switchToNewTeamsButton.click()
+        print("\nSwitching To New Meets v2")
+    except:
+        pass
     print(colored(" Success!", "green"))
 
 
 def attendMeet():
+    time.sleep(10)
     print(f"\n\nNavigating to Google Meet #{meetIndex}...", end="")
-    driver.get(URL[2:])
+    driver.get(URL[1:])
     print(colored(" Success!", "green"))
     print(f"Entering Google Meet #{meetIndex}...", end="")
+    time.sleep(5)
+    # action.send_keys(Keys.ESCAPE).perform()
+    try:
+        ContinueinBrowserButton=wait.until(when.element_to_be_clickable((By.CSS_SELECTOR, ContinueinBrowserButtonPath)))
+        ContinueinBrowserButton.click()
+    except:
+        pass
+    time.sleep(10)
+    # try:
+    #     JoinWithoutAudioVideoButton=wait.until(when.element_to_be_clickable((By.CLASS_NAME, JoinWithoutAudioVideoButtonPath)))
+    #     print(JoinWithoutAudioVideoButton)
+    #     MyButton = JoinWithoutAudioVideoButton[11]
+    #     print(MyButton)
+    #     MyButton.click()
+    # except:
+    #     print(e)
 
     try:
-        joinButton = wait.until(when.element_to_be_clickable((by.XPATH, joinButton1Path)))
-    except:
-        joinButton = wait.until(when.element_to_be_clickable((by.XPATH, joinButton2Path)))
-    if BROWSER_DRIVER.lower().startswith("chrome"):
+        ToggleMuteButton = wait.until(when.element_to_be_clickable((By.CSS_SELECTOR, ToggleMuteButtonPath)))
         time.sleep(1)
-        action.send_keys(Keys.ESCAPE).perform()
+        ToggleMuteButton.click()
+    except:
+        pass
+
+    joinButton = wait.until(when.element_to_be_clickable((By.CSS_SELECTOR, joinButton1Path)))
     time.sleep(1)
+    
     joinButton.click()
 
     print(colored(" Success!", "green"))
     time.sleep(1)
     print(colored(f"Now attending Google Meet #{meetIndex} @{timeStamp()}", "green"), end="")
 
-    try:
-        joinButton = wait.until(when.element_to_be_clickable((by.XPATH, joinButton1Path)))   # For another prompt that pops up for Meets being recorded
-        time.sleep(1)
-        joinButton.click()
-    except:
-        pass
-
 
 def endMeet():
-    endButton = driver.find_element_by_css_selector(endButtonPath)
+    endButton = wait.until(when.element_to_be_clickable((By.CSS_SELECTOR, endButtonPath)))  
     endButton.click()
     print(colored(f"\nSuccessfully ended Google Meet #{meetIndex} @{timeStamp()}\n", "red"), end="")
-
-
-def genericError():
-    # clrscr()
-    print(colored(" Failed!", "red"), end="")
-    print("\n\nPossible fixes:\n")
-    print("1.1 Make sure you have downloaded the latest version of MeetNinja from the GitHub page (every new iteration brings fixes and new capabilities)")
-    print("1.2 Make sure you have pip-installed all the required python packages mentioned in the README")
-    print("1.3 UNIX-based systems (Linux / Mac): Make sure you have given all the contents of MeetNinja the correct permissions (eg: 'chmod 777 ./ -R')")
-    print("2.1 Check your inputs and run MeetNinja again (make sure there are no leading zeros in the Meet start times)")
-    print("2.2 And / Or make sure you have chosen the correct webdriver file respective of your web browser and operating system")
-    print("3. Make sure the generated web browser is not \"Minimized\" while MeetNinja is working")
-    print("4.1. Make sure the webdriver file is of the latest stable build (https://chromedriver.chromium.org/ or https://github.com/mozilla/geckodriver/releases)")
-    print("4.2. And / Or make sure your chosen web browser is updated to the latest version")
-    print("4.3. And / Or make sure the webdriver file is at least of the same version as your chosen web browser (or lower)")
-    print("5. Make sure the small \"time.sleep()\" delays (in seconds) in the login() and attendMeet() functions are comfortable for your internet speed")
-    print("6. Make sure your internet connection is stable throughout the process")
-    print("\nPress Enter to exit.")
-    input()
+    time.sleep(5)
     try:
         driver.quit()
     except:
@@ -238,7 +240,7 @@ if __name__ == "__main__":
 
     printBanner()
     try:
-        DURATION *= 60
+        DURATION *= 1
         driver = initBrowser()
         wait = webdriver.support.ui.WebDriverWait(driver, 7)
         action = ActionChains(driver)
@@ -252,9 +254,9 @@ if __name__ == "__main__":
             print(colored(" Started!", "green"))
             if (meetIndex <= 1):
                 login()
-            #attendMeet()
+            attendMeet()
             time.sleep(DURATION)
-            #endMeet()
+            endMeet()
         print("\n\nAll Meets completed successfully.")
         # hibernate()
         # Uncomment above to hibernate after a 10 second countdown upon completion of all Meets (Ctrl + C to abort hibernation)
@@ -273,4 +275,3 @@ if __name__ == "__main__":
     except:
         print(e)
         # Uncomment above to display error traceback (use when reporting issues)
-        genericError()
